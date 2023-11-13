@@ -32,7 +32,6 @@ dfx identity new minter
 dfx identity new archive_controller
 ```
 
-
 Then we proceed to deploy the ICRC1 Ledger, a script has been supplied for that. This sets up the ledger.
 
 ```bash
@@ -45,10 +44,12 @@ After that you can then run the deploy script of the buy someone a coffee canist
 npm run gen-deploy
 ```
 
-And lastly we run the faucet script which mints new tokens to our coffee canister
+And lastly we run the faucet script which mints new tokens to our coffee canister.
+`<amount>` is a placeholder for any amount of tokens in e8s you want to mint
 
 ```bash
-npm run faucet
+# npm run faucet <amount>
+npm run faucet 100_000_000_000
 ```
 
 Now you can test the coffee canister on candid ui
@@ -57,3 +58,13 @@ example link
 ```bash
 http://127.0.0.1:4943/?canisterId={candid_ui_id}&id={coffee_canister}
 ```
+
+To send a message you need a receiver address to get one from your terminal
+
+```bash
+dfx identity new newuser
+
+dfx identity get-wallet --identity newuser
+```
+
+After sending a message you can check receivers balance by using the `get_coffee_balance` function in the candid ui.
