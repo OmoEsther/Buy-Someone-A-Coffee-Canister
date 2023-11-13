@@ -1,0 +1,22 @@
+{
+  "canisters": {
+    "buysomeoneacoffee": {
+      "candid": "src/buysomeoneacoffee/buysomeoneacoffee.did",
+      "package": "buysomeoneacoffee",
+      "type": "rust"
+    },
+    "icrc1_ledger_canister": {
+      "type": "custom",
+      "candid": "src/icrc1_ledger_canister/ledger.did",
+      "wasm": "src/icrc1_ledger_canister/ic-icrc1-ledger.wasm.gz"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

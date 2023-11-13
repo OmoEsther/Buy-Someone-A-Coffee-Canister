@@ -1,0 +1,25 @@
+type BalancePayload = record { receiver : text };
+type CoffeeMessage = record {
+  id : nat64;
+  name : text;
+  message : text;
+  timestamp : nat64;
+  receiver : text;
+};
+type Error = variant { NotFound : record { msg : text } };
+type MessagePayload = record {
+  name : text;
+  message : text;
+  amount : nat;
+  receiver : text;
+};
+type Result = variant { Ok : CoffeeMessage; Err : Error };
+type Result_1 = variant { Ok : nat; Err : text };
+service : {
+  delete_message : (nat64) -> (Result);
+  get_account_balance : () -> (Result_1);
+  get_coffee_balance : (BalancePayload) -> (Result_1);
+  get_message : (nat64) -> (Result) query;
+  get_principal : () -> (principal) query;
+  send_message : (MessagePayload) -> (Result_1);
+}
