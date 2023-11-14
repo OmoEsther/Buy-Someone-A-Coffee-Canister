@@ -1,25 +1,31 @@
-type BalancePayload = record { receiver : text };
+type BalancePayload = record { receiver : Text };
+
 type CoffeeMessage = record {
-  id : nat64;
-  name : text;
-  message : text;
-  timestamp : nat64;
-  receiver : text;
+  id : Nat64;
+  name : Text;
+  message : Text;
+  timestamp : Nat64;
+  receiver : Text;
 };
-type Error = variant { NotFound : record { msg : text } };
+
+type Error = variant { NotFound : record { message : Text } };
+
 type MessagePayload = record {
-  name : text;
-  message : text;
-  amount : nat;
-  receiver : text;
+  name : Text;
+  message : Text;
+  amount : Nat;
+  receiver : Text;
 };
+
 type Result = variant { Ok : CoffeeMessage; Err : Error };
-type Result_1 = variant { Ok : nat; Err : text };
+
+type Result_1 = variant { Ok : Nat; Err : Text };
+
 service : {
-  delete_message : (nat64) -> (Result);
-  get_account_balance : () -> (Result_1);
-  get_coffee_balance : (BalancePayload) -> (Result_1);
-  get_message : (nat64) -> (Result) query;
-  get_principal : () -> (principal) query;
-  send_message : (MessagePayload) -> (Result_1);
+  deleteMessage : (Nat64) -> (Result);
+  getAccountBalance : () -> (Result_1);
+  getCoffeeBalance : (BalancePayload) -> (Result_1);
+  getMessage : (Nat64) -> (Result) query;
+  getPrincipal : () -> (Principal) query;
+  sendMessage : (MessagePayload) -> (Result_1);
 }
