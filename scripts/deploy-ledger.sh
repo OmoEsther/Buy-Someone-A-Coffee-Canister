@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# add generate minter
+dfx identity new minter
+
+# add generate archive_controller
+dfx identity new archive_controller
+
 dfx identity use minter
 export MINTER_ACCOUNT=$(dfx identity get-principal)
 
