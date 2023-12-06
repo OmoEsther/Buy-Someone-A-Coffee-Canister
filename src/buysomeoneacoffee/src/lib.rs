@@ -3,6 +3,7 @@ extern crate serde;
 use candid::{Decode, Encode, Nat, Principal};
 use ic_cdk::api::call::CallResult;
 use ic_cdk::api::time;
+use ic_cdk::caller;
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::{BoundedStorable, Cell, DefaultMemoryImpl, StableBTreeMap, Storable};
 use icrc_ledger_types::icrc1::account::Account;
@@ -93,7 +94,11 @@ async fn get_account_balance() -> Result<Nat, String> {
 
 #[ic_cdk::update]
 async fn get_coffee_balance(receiver: BalancePayload) -> Result<Nat, String> {
-    let receiver_p = Principal::from_text(receiver.receiver).unwrap();
+    let receiver_opt = Principal::from_text(receiver.receiver);
+    if receiver_opt.is_err(){
+        return Err(format!("Receiver is not a valid principal"))
+    }
+    let receiver_p = receiver_opt.unwrap();
     let balance = _get_balance(receiver_p)
         .await
         .map_err(|e| format!("failed to call ledger: {:?}", e));
@@ -102,13 +107,14 @@ async fn get_coffee_balance(receiver: BalancePayload) -> Result<Nat, String> {
 
 #[ic_cdk::update]
 async fn send_message(message: MessagePayload) -> Result<Nat, String> {
-    let id = ID_COUNTER
-        .with(|counter| {
-            let current_value = *counter.borrow().get();
-            counter.borrow_mut().set(current_value + 1)
-        })
-        .expect("cannot increment id counter");
-    let receiver = Principal::from_text(message.receiver.clone()).unwrap();
+    let receiver_opt = Principal::from_text(message.receiver.clone());
+    if receiver_opt.is_err(){
+        return Err(format!("Receiver is not a valid principal"))
+    }
+    if message.amount == 0 || message.message.trim().len() == 0 || message.name.trim().len() == 0 {
+        return Err(format!("Invalid payload input data={{message: {}, amount: {}, name: {}}}", message.message, message.amount, message.name))
+    }
+    let receiver = receiver_opt.unwrap();
     let payload = TransferPayload {
         owner: receiver,
         amount: message.amount,
@@ -120,6 +126,12 @@ async fn send_message(message: MessagePayload) -> Result<Nat, String> {
 
     match result {
         Ok(value) => {
+            let id = ID_COUNTER
+            .with(|counter| {
+                let current_value = *counter.borrow().get();
+                counter.borrow_mut().set(current_value + 1)
+            })
+            .expect("cannot increment id counter"); 
             let message = CoffeeMessage {
                 id,
                 name: message.name,
@@ -141,6 +153,18 @@ fn do_insert(message: &CoffeeMessage) {
 
 #[ic_cdk::update]
 fn delete_message(id: u64) -> Result<CoffeeMessage, Error> {
+    let message_opt = _get_message(&id);
+    if message_opt.is_none(){
+        return Err(Error::NotFound {msg: format!(
+            "message not found with id={}.",
+            id
+        )})
+    }
+    let message = message_opt.unwrap();
+    if message.receiver != caller().to_string(){
+        return Err(Error::NotReceiver)
+    }
+
     match STORAGE.with(|service| service.borrow_mut().remove(&id)) {
         Some(message) => Ok(message),
         None => Err(Error::NotFound {
@@ -155,6 +179,7 @@ fn delete_message(id: u64) -> Result<CoffeeMessage, Error> {
 #[derive(candid::CandidType, Deserialize, Serialize)]
 enum Error {
     NotFound { msg: String },
+    NotReceiver
 }
 
 // a helper method to get a message by id. used in get_message/update_message
